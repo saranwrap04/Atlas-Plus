@@ -308,25 +308,32 @@ function WM:Release()
     end
 end
 
+-- In combat the game forbids moving a window that holds a protected frame. The only one in the
+-- game's map is its quest area frame (WorldMapBlobFrame), set aside for the fight when combat starts
+-- (see WM:BlobCombat). Without it the map moves freely, so it stays usable in combat.
+-- If it could not be set aside (a reload in combat), the map waits for the end of the fight.
+function WM:CanMoveInCombat()
+    if not InCombatLockdown() then return true end
+    if WorldMapBlobFrame and not self.blobAside then return false end
+    return not WorldMapFrame:IsProtected()
+end
+
 function WM:Attach()
     self.want = true
     Defer(function()
         local UI = AP.UI
         if WM.want and UI.frame:IsShown() and UI.page == "world" then
-            if InCombatLockdown() then WM:CombatNotice(true) else WM:Embed() end   -- after combat (see below)
+            if WM:CanMoveInCombat() then WM:Embed() else WM:CombatNotice(true) end
         end
     end)
 end
 
--- In combat the game forbids moving or hiding a window that holds protected frames, and the game's map
--- can hold some. So the map leaves the Atlas Plus window when combat starts (just before the lock) and
--- comes back when it ends. Meanwhile the map key opens the game's map as usual.
 function WM:CombatNotice(on)
     local WV = AP.WorldView
     if not WV.combatText then
         WV.combatText = WV.layer:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
         WV.combatText:SetPoint("CENTER", WV.holder, "CENTER")
-        WV.combatText:SetText("In combat: the map comes back when the fight ends.\nThe map key (M) opens the game's map meanwhile.")
+        WV.combatText:SetText("The map comes back when the fight ends.\nThe map key (M) opens the game's map meanwhile.")
     end
     if on then WV.combatText:Show() else WV.combatText:Hide() end
 end
@@ -342,7 +349,7 @@ function WM:OpenGameMap()
     self:Detach()
     -- one frame later: the map is fully given back to the game first
     Defer(function()
-        if InCombatLockdown() then return end
+        if not self:CanMoveInCombat() then return end
         -- the small map, at the size of the settings (its button on the map goes full screen)
         if WORLDMAP_SETTINGS and WORLDMAP_SETTINGS.size ~= WindowedSize() and WorldMap_ToggleSizeDown then
             WorldMap_ToggleSizeDown()
@@ -372,6 +379,7 @@ end
 local lastZone, lastTarget
 local function OnMapUpdate()
     if not WM.ready then return end
+    if WorldMapFrame:GetNumPoints() == 0 then WM:EnsurePlaced() end
     local target = WM.embedded and WM.infoEmbedded or WM.info
     local other = WM.embedded and WM.info or WM.infoEmbedded
     if target ~= lastTarget then other:SetText(""); lastTarget = target; lastZone = nil end
@@ -521,6 +529,17 @@ function WM:BlobCombat(on)
     end
 end
 
+-- The game's small map is placed by the game's window manager, and the game's own map
+-- functions take its place away (WorldMapFrame_SetMiniMode clears it). Shown without a
+-- place (by the game or by an addon), the game's map code errors (WorldMapFrame.lua:750,
+-- "centerY" nil). A map on the screen always gets a place.
+function WM:EnsurePlaced()
+    if self.embedded or not WorldMapFrame:IsShown() then return end
+    if WorldMapFrame:GetNumPoints() == 0 then
+        WorldMapFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 16, -116)
+    end
+end
+
 ---------------------------------------------------------------------------
 -- Setup
 ---------------------------------------------------------------------------
@@ -530,15 +549,21 @@ function WM:Init()
 
     -- the map key opens Atlas Plus (the quest log's map button and "Game map" still open the game's map)
     WorldMapFrame:HookScript("OnShow", function()
+        WM:EnsurePlaced()
         if WM.internal or WM.embedded then return end
-        if InCombatLockdown() then
-            -- in combat: the game's map on its own; if Atlas Plus is open it closes (it holds no protected frame now)
+        if not WM:CanMoveInCombat() then
+            -- in combat, map not free to move: the game's map on its own; if Atlas Plus is open it closes
             local UI = AP.UI
             if UI.frame:IsShown() and not UI.frame:IsProtected() then UI.frame:Hide() end
             return
         end
         -- opened while still inside a hidden Atlas Plus window: put it back on the screen
-        if WorldMapFrame:GetParent() ~= UIParent and WorldMapFrame:GetParent() ~= nil then Restore(); WorldMapFrame:Show() return end
+        if WorldMapFrame:GetParent() ~= UIParent and WorldMapFrame:GetParent() ~= nil then
+            Restore()
+            WorldMapFrame:Show()
+            WM:EnsurePlaced()
+            return
+        end
         if WM.failed then return end
         WM:ApplySize()
         WM:KeepOnScreen()
@@ -580,12 +605,13 @@ function WM:Init()
     cf:RegisterEvent("PLAYER_REGEN_ENABLED")
     cf:SetScript("OnEvent", function(_, event)
         if event == "PLAYER_REGEN_DISABLED" then
-            if WM.embedded then
+            -- the quest area frame is set aside first: the map then stays in the window during the fight
+            WM:BlobCombat(true)
+            if WM.embedded and WorldMapFrame:IsProtected() then
                 WM.want = true
                 WM:Release()
                 WM:CombatNotice(true)
             end
-            WM:BlobCombat(true)
         else
             WM:BlobCombat(false)
             WM:CombatNotice(false)
@@ -662,7 +688,7 @@ function WM:Init()
     cf:SetScript("OnUpdate", UpdateCoords)
     self.coordFrame, self.coords = cf, coords
 
-    if WorldMap_ToggleSizeDown then hooksecurefunc("WorldMap_ToggleSizeDown", function() WM:ApplySize() end) end
+    if WorldMap_ToggleSizeDown then hooksecurefunc("WorldMap_ToggleSizeDown", function() WM:EnsurePlaced(); WM:ApplySize() end) end
     if WorldMap_ToggleSizeUp then hooksecurefunc("WorldMap_ToggleSizeUp", function() WM:ApplySize() end) end
     self:Update()
 end

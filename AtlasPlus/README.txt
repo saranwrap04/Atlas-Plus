@@ -1,4 +1,4 @@
-ATLAS PLUS for WoW 3.3.5a - version 1.10.1
+ATLAS PLUS for WoW 3.3.5a - version 1.10.3
 World map and instance maps in one window: every boss and its loot, world drops,
 world events, vendors, item search,
 map markers (dungeons, raids, world bosses, boats, zeppelins, tram, portals), no fog of war.
@@ -30,8 +30,8 @@ THE WINDOW
   Two tabs at the top: "World map" and "Atlas" (instance maps, bosses and loot).
   Move it by dragging its title, resize it with the corner at the bottom right.
   Opacity in the settings. While you move, it fades (50% by default, setting) unless the
-  mouse is over it. In combat the map leaves the window until the fight ends (the game
-  does not allow moving it then); the map key opens the game's map meanwhile.
+  mouse is over it. The map works in combat too: the map key opens Atlas Plus with the
+  map as usual; the selected quest's shaded area comes back when the fight ends.
 
   ATLAS TAB
 

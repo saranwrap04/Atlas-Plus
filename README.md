@@ -2,7 +2,7 @@
 
 **Instance maps with every boss and its loot.** For World of Warcraft 3.3.5a (Wrath of the Lich King).
 
-Version 1.10.1 · by Saranwrap · made for ChromieCraft (AzerothCore)
+Version 1.10.3 · by Saranwrap · made for ChromieCraft (AzerothCore)
 
 Atlas Plus puts the world map, the map of every dungeon and raid, their bosses and everything they drop in one clean window, and opens on the right map by itself. It also replaces map marker addons and removes the fog of war.
 
@@ -38,7 +38,7 @@ Atlas Plus does not need Atlas, AtlasLoot or another map addon. Use it alone: ot
 
 Open it with the map key (**M**), `/ap`, the minimap button or a key (**Escape → Key Bindings → Atlas Plus**).
 
-Two tabs at the top: **World map** and **Atlas** (instance maps, bosses and loot). Drag the title to move the window, drag the corner at the bottom right to resize it. While you move, it fades (50% by default, setting) unless the mouse is over it. In combat the map leaves the window until the fight ends, since the game doesn't allow moving it then; the map key opens the game's map meanwhile.
+Two tabs at the top: **World map** and **Atlas** (instance maps, bosses and loot). Drag the title to move the window, drag the corner at the bottom right to resize it. While you move, it fades (50% by default, setting) unless the mouse is over it. The map works in combat too: the map key opens Atlas Plus with the map as usual. The selected quest's shaded area comes back when the fight ends.
 
 In a dungeon or raid with a game map (Ulduar, Icecrown Citadel...), Atlas Plus opens that map on the World map page, on the floor you are on. The Atlas map stays in the **Atlas** tab.
 
