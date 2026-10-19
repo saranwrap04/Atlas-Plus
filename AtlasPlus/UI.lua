@@ -315,7 +315,8 @@ function UI:CreateList(f)
     self.listPanel = panel
 
     -- the bar between the list and the map: drag it to make the list wider or narrower
-    local bar = CreateFrame("Button", nil, f)
+    -- (a child of the list: it hides, moves and fades with it)
+    local bar = CreateFrame("Button", nil, panel)
     bar:SetPoint("TOPLEFT", panel, "TOPRIGHT", 1, 0)
     bar:SetPoint("BOTTOMLEFT", panel, "BOTTOMRIGHT", 1, 0)
     bar:SetWidth(8)
@@ -356,15 +357,21 @@ function UI:CreateList(f)
         b.x0, b.w0 = GetCursorPosition(), ListW()
         b.sc = b:GetEffectiveScale()
         b:SetScript("OnUpdate", function(s)
+            -- the button was let go somewhere else (over the map, another window): the drag ends
+            if not IsMouseButtonDown("LeftButton") then s:GetScript("OnMouseUp")(s) return end
             local x = GetCursorPosition()
             UI:SetListWidth(s.w0 + (x - s.x0) / s.sc)
         end)
     end)
     local function StopDrag(b)
-        if not b.dragging then return end
-        b.dragging = nil
-        b:SetScript("OnUpdate", nil)
-        if not b:IsMouseOver() then Paint(false) end
+        if b.dragging then
+            b.dragging = nil
+            b:SetScript("OnUpdate", nil)
+        end
+        if not (b:IsVisible() and b:IsMouseOver()) then
+            Paint(false)
+            if GameTooltip:IsOwned(b) then GameTooltip:Hide() end
+        end
     end
     bar:SetScript("OnMouseUp", StopDrag)
     bar:SetScript("OnHide", StopDrag)

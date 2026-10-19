@@ -675,7 +675,14 @@ function WM:Init()
     infoE:SetPoint("TOP", anchor, "BOTTOM", 0, -4)
     infoE:SetJustifyH("CENTER")
     self.infoEmbedded = infoE
-    WorldMapButton:HookScript("OnUpdate", OnMapUpdate)
+    -- the game's map update needs the map's position on the screen: for one frame after the map
+    -- is shown or moved the game can give none yet (WorldMapFrame.lua:750, "centerY" nil), so that
+    -- frame is skipped (the next one has it)
+    local gameUpdate = WorldMapButton:GetScript("OnUpdate")
+    WorldMapButton:SetScript("OnUpdate", function(self, elapsed)
+        if gameUpdate and self:GetCenter() then gameUpdate(self, elapsed) end
+        OnMapUpdate()
+    end)
 
     -- coordinates on the game's map on its own, one line under the map art
     local cf = CreateFrame("Frame", nil, WorldMapFrame)

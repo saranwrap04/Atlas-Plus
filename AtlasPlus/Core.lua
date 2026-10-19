@@ -9,7 +9,7 @@
 local ADDON_NAME = ...
 AtlasPlus = AtlasPlus or {}
 local AP = AtlasPlus
-AP.VERSION = "1.10.3"
+AP.VERSION = "1.10.4"
 AP.MEDIA = "Interface\\AddOns\\" .. ADDON_NAME .. "\\"
 AP.MAPS = AP.MEDIA .. "Images\\Maps\\"
 AP.ACCENT = "|cfffc7a2b"

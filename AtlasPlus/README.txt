@@ -1,4 +1,4 @@
-ATLAS PLUS for WoW 3.3.5a - version 1.10.3
+ATLAS PLUS for WoW 3.3.5a - version 1.10.4
 World map and instance maps in one window: every boss and its loot, world drops,
 world events, vendors, item search,
 map markers (dungeons, raids, world bosses, boats, zeppelins, tram, portals), no fog of war.

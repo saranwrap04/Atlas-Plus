@@ -2,7 +2,7 @@
 
 **Instance maps with every boss and its loot.** For World of Warcraft 3.3.5a (Wrath of the Lich King).
 
-Version 1.10.3 · by Saranwrap · made for ChromieCraft (AzerothCore)
+Version 1.10.4 · by Saranwrap · made for ChromieCraft (AzerothCore)
 
 Atlas Plus puts the world map, the map of every dungeon and raid, their bosses and everything they drop in one clean window, and opens on the right map by itself. It also replaces map marker addons and removes the fog of war.
 
