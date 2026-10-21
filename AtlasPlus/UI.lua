@@ -170,8 +170,7 @@ function UI:Create()
     local icon = title:CreateTexture(nil, "ARTWORK")
     W.Size(icon, 20, 20)
     icon:SetPoint("LEFT", 8, 0)
-    icon:SetTexture(ICON)
-    icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    icon:SetTexture(AP.ICON)
     local tfs = W.Text(title, "GameFontNormal")
     tfs:SetPoint("LEFT", icon, "RIGHT", 7, 0)
     tfs:SetText("|cffffffffAtlas Plus|r")
@@ -1348,8 +1347,12 @@ function UI:CreateSettings(f)
         local sc = win:GetEffectiveScale() / UIParent:GetEffectiveScale()
         AP.db.settingsPos = { left = win:GetLeft() * sc, top = win:GetTop() * sc }
     end)
+    local bi = bar:CreateTexture(nil, "ARTWORK")
+    W.Size(bi, 20, 20)
+    bi:SetPoint("LEFT", 8, 0)
+    bi:SetTexture(AP.ICON)
     local bt = W.Text(bar, "GameFontNormal")
-    bt:SetPoint("LEFT", 10, 0)
+    bt:SetPoint("LEFT", bi, "RIGHT", 7, 0)
     bt:SetText("|cffffffffAtlas Plus|r  " .. AP.ACCENT .. "Settings|r")
     local bx = W.Button(bar, "X", 24, 20)
     bx:SetPoint("RIGHT", -4, 0)
@@ -1385,110 +1388,178 @@ function UI:CreateSettings(f)
     g:SetScript("OnMouseUp", function(self) self:SetScript("OnUpdate", nil) end)
     g:SetScript("OnHide", function(self) self:SetScript("OnUpdate", nil) end)
 
-    local s = CreateFrame("Frame", nil, win)
-    s:SetPoint("TOPLEFT", 0, -30)
-    s:SetPoint("BOTTOMRIGHT", 0, 0)
-    local db = function() return AP.db end
+    -- side bar of categories on the left, the options of the one chosen on the right
+    local side = CreateFrame("Frame", nil, win)
+    side:SetPoint("TOPLEFT", 8, -38)
+    side:SetPoint("BOTTOMLEFT", 8, 8)
+    side:SetWidth(180)
+    W.Backdrop(side, C.panel)
+    local content = CreateFrame("Frame", nil, win)
+    content:SetPoint("TOPLEFT", side, "TOPRIGHT", 6, 0)
+    content:SetPoint("BOTTOMRIGHT", -8, 8)
+    W.Backdrop(content, C.panel)
 
-    local function Header(text, x, y)
-        local h = W.Text(s, "GameFontNormal")
-        h:SetPoint("TOPLEFT", x, y)
-        h:SetText(AP.ACCENT .. text .. "|r")
-        local l = s:CreateTexture(nil, "ARTWORK")
-        l:SetTexture("Interface\\Buttons\\WHITE8X8")
-        l:SetVertexColor(unpack(C.line))
-        l:SetHeight(1)
-        l:SetWidth(330)
-        l:SetPoint("TOPLEFT", h, "BOTTOMLEFT", 0, -4)
+    local db = function() return AP.db end
+    local pages, buttons, current = {}, {}, nil
+    local function Show(key)
+        current = key
+        for k, pg in pairs(pages) do if k == key then pg:Show() else pg:Hide() end end
+        for k, b2 in pairs(buttons) do b2:SetSelected(k == key) end
+        AP.db.settingsPage = key
     end
-    local y, x0
-    local function Column(title, x)
-        Header(title, x, -16)
-        x0, y = x, -44
+    self.ShowSettingsPage = function(_, key) if pages[key] then Show(key) end end
+
+    local CW = 900                      -- content width
+    local X1, X2 = 20, 470
+    local sy = -8
+    local function Group(text)
+        local g = W.Text(side, "GameFontDisableSmall")
+        g:SetPoint("TOPLEFT", 10, sy - 6)
+        g:SetText(string.upper(text))
+        sy = sy - 22
     end
-    local function Check(label, desc, key, after)
-        local cb = W.CheckBox(s, label, desc, function() return db()[key] end, function(v) db()[key] = v; if after then after(v) end end)
-        cb:SetPoint("TOPLEFT", x0 + 4, y)
-        y = y - (desc and 46 or 28)
-        return cb
-    end
-    local function Slider(label, minV, maxV, step, key, after)
-        y = y - 26
-        local sl = W.Slider(s, label, minV, maxV, step, function() return db()[key] or 1 end,
-            function(v) db()[key] = v; if after then after(v) end end, function(v) return math.floor(v * 100 + 0.5) .. "%" end)
-        sl:SetPoint("TOPLEFT", x0 + 8, y)
-        y = y - 30
-        return sl
-    end
-    local function Note(text)
-        local n = W.Text(s, "GameFontDisableSmall")
-        n:SetPoint("TOPLEFT", x0 + 4, y - 8)
-        n:SetWidth(330)
-        n:SetJustifyH("LEFT")
-        n:SetText(text)
-        y = y - 34
+    local function Page(key, label, title, help)
+        local b2 = W.SideButton(side, label, 176)
+        b2:SetPoint("TOPLEFT", 2, sy)
+        b2:SetScript("OnClick", function() Show(key) end)
+        buttons[key] = b2
+        sy = sy - 22
+        local pg = CreateFrame("Frame", nil, content)
+        pg:SetAllPoints()
+        pg:Hide()
+        pages[key] = pg
+        local t = W.Section(pg, title, CW - 20)
+        t:SetPoint("TOP", 0, -10)
+        local h = W.Text(pg, "GameFontDisableSmall")
+        h:SetPoint("TOPLEFT", 18, -32)
+        h:SetWidth(CW - 40)
+        h:SetJustifyH("LEFT")
+        h:SetText(help)
+        -- two columns, each with its own y
+        local col = { [X1] = -62, [X2] = -62 }
+        pg.Check = function(_, x, label2, desc, get, set)
+            local cb = W.CheckBox(pg, label2, desc, get, set)
+            cb:SetPoint("TOPLEFT", x, col[x])
+            col[x] = col[x] - (desc and 48 or 28)
+            return cb
+        end
+        pg.Opt = function(self2, x, label2, desc, key2, after)
+            return self2:Check(x, label2, desc, function() return db()[key2] end,
+                function(v) db()[key2] = v; if after then after(v) end end)
+        end
+        pg.Slider = function(_, x, label2, minV, maxV, step, key2, after)
+            col[x] = col[x] - 26
+            local sl = W.Slider(pg, label2, minV, maxV, step, function() return db()[key2] or 1 end,
+                function(v) db()[key2] = v; if after then after(v) end end,
+                function(v) return math.floor(v * 100 + 0.5) .. "%" end)
+            sl:SetPoint("TOPLEFT", x + 4, col[x])
+            col[x] = col[x] - 46
+            return sl
+        end
+        pg.Section = function(_, x, text, w)
+            col[x] = col[x] - 6
+            local sec = W.Section(pg, text, w or 410)
+            sec:SetPoint("TOPLEFT", x, col[x])
+            col[x] = col[x] - 28
+        end
+        pg.Note = function(_, x, text, w)
+            local n = W.Text(pg, "GameFontDisableSmall")
+            n:SetPoint("TOPLEFT", x + 2, col[x] - 2)
+            n:SetWidth(w or 400)
+            n:SetJustifyH("LEFT")
+            n:SetText(text)
+            col[x] = col[x] - 36
+            return n
+        end
+        pg.Skip = function(_, x, h2) col[x] = col[x] - h2 end
+        pg.Y = function(_, x) return col[x] end
+        return pg
     end
     local function Refresh() AP.WorldMap:Update(); AP.WorldView:Refresh() end
 
-    -- 1. the window
-    Column("Atlas Plus window", 20)
-    Check("Open on the map of where you are", "In a dungeon or raid: its map and wing, with the loot of your difficulty. Outdoors: the world map, on your zone.", "autoSelect")
-    Check("Open by itself in dungeons and raids", nil, "autoOpen")
-    local mm = W.CheckBox(s, "Minimap button", nil, function() return not db().minimap.hide end,
-        function(v) db().minimap.hide = not v; UI:UpdateMinimapButton() end)
-    mm:SetPoint("TOPLEFT", x0 + 4, y)
-    y = y - 28
-    Check("Lock the window", "It can't be moved by its title bar.", "locked")
-    Check("Fade while moving", "See-through while you move, unless the mouse is over it.", "fadeMoving")
-    Slider("Opacity while moving", 0.1, 1, 0.05, "fadeAlpha")
-    Slider("Window size", 0.5, 1.6, 0.05, "scale", function() UI:ApplyLayout() end)
-    Slider("Window opacity", 0.3, 1, 0.05, "alpha", function() UI:ApplyLayout() end)
-    Note("Move the window: drag its title. Resize it: drag its bottom right corner.")
+    Group("Atlas Plus")
+    local g = Page("general", "General", "General", "How the Atlas Plus window opens, moves and looks.")
+    g:Section(X1, "Opening")
+    g:Opt(X1, "Open on the map of where you are", "In a dungeon or raid: its map and wing, with the loot of your difficulty. Outdoors: the world map, on your zone.", "autoSelect")
+    g:Opt(X1, "Open by itself in dungeons and raids", nil, "autoOpen")
+    g:Check(X1, "Minimap button", "Left-click: open / close. Right-click: settings. Drag it around the minimap.",
+        function() return not db().minimap.hide end, function(v) db().minimap.hide = not v; UI:UpdateMinimapButton() end)
+    g:Section(X1, "Moving")
+    g:Opt(X1, "Lock the window", "It can't be moved by its title bar.", "locked")
+    g:Opt(X1, "Fade while moving", "See-through while you move, unless the mouse is over it.", "fadeMoving")
+    g:Section(X2, "Look")
+    g:Slider(X2, "Window size", 0.5, 1.6, 0.05, "scale", function() UI:ApplyLayout() end)
+    g:Slider(X2, "Window opacity", 0.3, 1, 0.05, "alpha", function() UI:ApplyLayout() end)
+    g:Slider(X2, "Opacity while moving", 0.1, 1, 0.05, "fadeAlpha")
+    g:Note(X2, "Move the window: drag its title. Resize it: drag its bottom right corner.  /ap reset puts it back.")
 
-    -- 2. the world map
-    Column("World map", 385)
-    Check("The map key (M) opens Atlas Plus", "The game's map opens inside Atlas Plus, quests and map addons included. Untick to get the game's map back on M.", "replaceWorldMap")
-    Check("Game instance maps", "In a dungeon or raid with a game map (Ulduar, Icecrown Citadel...): open it, on your floor. The Atlas map stays in the Atlas tab.", "gameInstanceMaps")
-    Check("No fog of war", "Show the areas you have not explored yet.", "showUnexplored", Refresh)
-    Check("Darken unexplored areas", "So you can still tell them apart.", "darkenUnexplored", Refresh)
-    Check("Zone panel (top left of the map)", nil, "zoneBlock", Refresh)
-    Check("Zone info under the cursor", nil, "worldZoneInfo", Refresh)
-    Check("Coordinates (yours and the cursor's)", nil, "worldCoords", Refresh)
-    Slider("Quest icon size", 0.5, 2, 0.1, "questScale", function() AP.WorldMap:RescaleQuestIcons() end)
-    Slider("Game map opacity", 0.3, 1, 0.05, "gameMapAlpha", function() AP.WorldMap:Update() end)
-    Slider("Game small map size", 0.5, 1.5, 0.05, "gameSmallScale", function() AP.WorldMap:Update() end)
-    Note("These two: the game's own map (Game map button). The size changes the small map, even while it is open.")
+    Group("Maps")
+    local wm = Page("world", "World map", "World map", "The World map tab: the game's map inside Atlas Plus, with zone info and no fog of war.")
+    wm:Section(X1, "The map")
+    wm:Opt(X1, "The map key (M) opens Atlas Plus", "The game's map opens inside Atlas Plus, quests and map addons included. Untick to get the game's map back on M.", "replaceWorldMap")
+    wm:Opt(X1, "Game instance maps", "In a dungeon or raid with a game map (Ulduar, Icecrown Citadel...): open it, on your floor. The Atlas map stays in the Atlas tab.", "gameInstanceMaps")
+    wm:Opt(X1, "No fog of war", "Show the areas you have not explored yet.", "showUnexplored", Refresh)
+    wm:Opt(X1, "Darken unexplored areas", "So you can still tell them apart.", "darkenUnexplored", Refresh)
+    wm:Section(X2, "On the map")
+    wm:Opt(X2, "Zone panel (top left of the map)", "Level range and instances of the zone shown.", "zoneBlock", Refresh)
+    wm:Opt(X2, "Zone info under the cursor", nil, "worldZoneInfo", Refresh)
+    wm:Opt(X2, "Coordinates (yours and the cursor's)", nil, "worldCoords", Refresh)
+    wm:Slider(X2, "Quest icon size", 0.5, 2, 0.1, "questScale", function() AP.WorldMap:RescaleQuestIcons() end)
 
-    -- 3. map markers: one switch per kind, two per line
-    Column("Map markers", 750)
-    local col = 0
-    local function Marker(label, key)
-        local cb = W.CheckBox(s, label, nil, function() return db().markers[key] end, function(v) db().markers[key] = v; AP.Markers:Refresh() end)
-        cb:SetPoint("TOPLEFT", x0 + 4 + col * 172, y)
-        if col == 1 then y = y - 24 end
-        col = 1 - col
+    local gm = Page("game", "Game map", "Game map", "The game's own full screen map (Game map button on the World map tab).")
+    gm:Section(X1, "Game map")
+    gm:Slider(X1, "Game map opacity", 0.3, 1, 0.05, "gameMapAlpha", function() AP.WorldMap:Update() end)
+    gm:Slider(X1, "Game small map size", 0.5, 1.5, 0.05, "gameSmallScale", function() AP.WorldMap:Update() end)
+    gm:Note(X1, "The size changes the game's small map, even while it is open.")
+
+    local mk = Page("markers", "Map markers", "Map markers", "Icons Atlas Plus adds to the world map. The Markers menu under the map changes them too.")
+    mk:Section(X1, "Show on the map", CW - 40)
+    local list = {
+        { "Dungeons (blue)", "dungeon" }, { "Raids (green)", "raid" }, { "World bosses", "worldboss" },
+        { "Portals", "portal" }, { "Boats", "boat" }, { "Zeppelins", "zepp" },
+        { "Deeprun Tram", "tram" }, { "Flight masters", "flight" }, { "Innkeepers", "inn" },
+        { "Mailboxes", "mail" }, { "Banks", "bank" }, { "Auction houses", "auction" },
+    }
+    local y0 = mk:Y(X1)
+    for i, e in ipairs(list) do
+        local key = e[2]
+        local cb = W.CheckBox(mk, e[1], nil, function() return db().markers[key] end,
+            function(v) db().markers[key] = v; AP.Markers:Refresh() end)
+        local c, r = (i - 1) % 3, math.floor((i - 1) / 3)
+        cb:SetPoint("TOPLEFT", X1 + c * 290, y0 - r * 28)
     end
-    Marker("Dungeons (blue)", "dungeon"); Marker("Raids (green)", "raid")
-    Marker("World bosses", "worldboss"); Marker("Portals", "portal")
-    Marker("Boats", "boat");             Marker("Zeppelins", "zepp")
-    Marker("Deeprun Tram", "tram");      Marker("Flight masters", "flight")
-    Marker("Innkeepers", "inn");         Marker("Mailboxes", "mail")
-    Marker("Banks", "bank");             Marker("Auction houses", "auction")
-    y = y - 6
-    Check("Markers on continent maps", "Not the town ones (flight masters, inns...).", "continentMarkers", function() AP.Markers:Refresh() end)
-    Check("Hide Questie's dungeon and raid icons", "While the Atlas Plus ones are on. They come back when you turn these off.", "hideQuestieInstances", function() AP.Markers:SyncQuestie(true) end)
-    Check("Only my faction's", "Transports, portals and town markers. Neutral ones always show.", "myFactionOnly", function() AP.Markers:Refresh() end)
-    Slider("Marker size", 0.6, 2, 0.1, "pinScale", function() AP.Markers:Refresh() end)
-    Slider("Town marker size", 0.5, 2, 0.1, "townScale", function() AP.Markers:Refresh() end)
+    mk:Skip(X1, 4 * 28 + 4); mk:Skip(X2, 4 * 28 + 4 + 34)
+    mk:Section(X1, "Which ones")
+    mk:Opt(X1, "Markers on continent maps", "Not the town ones (flight masters, inns...).", "continentMarkers", function() AP.Markers:Refresh() end)
+    mk:Opt(X1, "Only my faction's", "Transports, portals and town markers. Neutral ones always show.", "myFactionOnly", function() AP.Markers:Refresh() end)
+    mk:Opt(X1, "Hide Questie's dungeon and raid icons", "While the Atlas Plus ones are on. They come back when you turn these off.", "hideQuestieInstances", function() AP.Markers:SyncQuestie(true) end)
+    mk:Section(X2, "Size")
+    mk:Slider(X2, "Marker size", 0.6, 2, 0.1, "pinScale", function() AP.Markers:Refresh() end)
+    mk:Slider(X2, "Town marker size", 0.5, 2, 0.1, "townScale", function() AP.Markers:Refresh() end)
 
-    -- credits
-    local credits = W.Text(s, "GameFontDisableSmall")
-    credits:SetPoint("BOTTOMLEFT", 20, 16)
-    credits:SetPoint("RIGHT", s, "RIGHT", -20, 0)
+    Group("Help")
+    local ab = Page("about", "Commands and credits", "Commands and credits", "Atlas Plus " .. AP.VERSION .. " by Saranwrap.")
+    ab:Section(X1, "Commands", CW - 40)
+    local cmds = W.Text(ab, "GameFontHighlight")
+    cmds:SetPoint("TOPLEFT", X1 + 2, ab:Y(X1))
+    cmds:SetWidth(CW - 40)
+    cmds:SetJustifyH("LEFT")
+    cmds:SetText(AP.ACCENT .. "/ap|r  open / close        " .. AP.ACCENT .. "/ap here|r  map of where you are        " ..
+        AP.ACCENT .. "/ap world|r  world map\n" .. AP.ACCENT .. "/ap search <item>|r  find an item in every instance        " ..
+        AP.ACCENT .. "/ap settings|r  these settings        " .. AP.ACCENT .. "/ap reset|r  window position and size")
+    ab:Skip(X1, 48)
+    ab:Section(X1, "Credits", CW - 40)
+    local credits = W.Text(ab, "GameFontHighlightSmall")
+    credits:SetPoint("TOPLEFT", X1 + 2, ab:Y(X1))
+    credits:SetWidth(CW - 40)
     credits:SetJustifyH("LEFT")
-    credits:SetText("Atlas Plus " .. AP.VERSION .. " by Saranwrap.  Instance maps and legends from Atlas by Dan Gilbert and contributors (GPL v2).  " ..
-        "Zone levels from LibTourist-3.0 (MIT).  Loot and drop chances from the AzerothCore world database.\n" ..
-        "/ap - open / close     /ap here - map of where you are     /ap world - world map     /ap search <item>     /ap reset - window position and size")
+    credits:SetText("Instance maps and legends from Atlas by Dan Gilbert and contributors (GPL v2).\n" ..
+        "Zone levels from LibTourist-3.0 (MIT).\nLoot and drop chances from the AzerothCore world database (the core ChromieCraft runs on).")
+
+    local v = W.Text(side, "GameFontDisableSmall")
+    v:SetPoint("BOTTOMLEFT", 10, 8)
+    v:SetText("v" .. AP.VERSION .. "  -  Saranwrap")
+    win:SetScript("OnShow", function() Show(current or AP.db.settingsPage or "general") end)
 end
 
 function UI:PlaceSettings()
@@ -1537,9 +1608,8 @@ function UI:CreateMinimapButton()
     bg:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
     local icon = b:CreateTexture(nil, "ARTWORK")
     W.Size(icon, 20, 20)
-    icon:SetPoint("TOPLEFT", 7, -5)
-    icon:SetTexture(ICON)
-    icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    icon:SetPoint("TOPLEFT", 6, -5)
+    icon:SetTexture(AP.ICON)
     local border = b:CreateTexture(nil, "OVERLAY")
     W.Size(border, 53, 53)
     border:SetPoint("TOPLEFT")

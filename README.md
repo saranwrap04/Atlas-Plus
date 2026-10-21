@@ -1,8 +1,12 @@
+<p align="center">
+<img width="390" height="332" alt="Atlas Plus" src="images/logo.png" />
+</p>
+
 # Atlas Plus
 
 **Instance maps with every boss and its loot.** For World of Warcraft 3.3.5a (Wrath of the Lich King).
 
-Version 1.10.4 · by Saranwrap · made for ChromieCraft (AzerothCore)
+Version 1.11.1 · by Saranwrap · made for ChromieCraft (AzerothCore)
 
 Atlas Plus puts the world map, the map of every dungeon and raid, their bosses and everything they drop in one clean window, and opens on the right map by itself. It also replaces map marker addons and removes the fog of war.
 
@@ -89,13 +93,17 @@ With Questie installed, its own dungeon and raid icons are hidden while the Atla
 
 ## Settings
 
-**Settings** button, right-click on the minimap button or `/ap settings`. Settings is a window of its own: move it, resize it from its corner, and watch the map change as you go.
+**Settings** button, right-click on the minimap button or `/ap settings`. Settings is a window of its own: move it, resize it from its corner, and watch the map change as you go. Categories are in a side bar on the left; it opens on the last one you used.
 
-| Column | Options |
+| Category | Options |
 | --- | --- |
-| **Window** | Open on the map of where you are, open by itself in dungeons and raids, minimap button, lock, fade while moving, opacity while moving, size, opacity |
-| **World map** | Map key (M), game instance maps, no fog of war, darken unexplored areas, zone panel, zone info under the cursor, coordinates, quest icon size, game map opacity and small map size |
-| **Map markers** | Each type on / off (towns included), on continent maps too, hide Questie's dungeon and raid icons, only my faction's, marker size, town marker size |
+| **General** | Open on the map of where you are, open by itself in dungeons and raids, minimap button, lock, fade while moving, window size, window opacity, opacity while moving |
+| **World map** | Map key (M), game instance maps, no fog of war, darken unexplored areas, zone panel, zone info under the cursor, coordinates, quest icon size |
+| **Game map** | Opacity and small map size of the game's own map |
+| **Map markers** | Each type on / off (towns included), on continent maps too, only my faction's, hide Questie's dungeon and raid icons, marker size, town marker size |
+| **Commands and credits** | Every command, and where the maps and data come from |
+
+Sliders: drag, use the mouse wheel, or type a value in the box under them.
 
 *Quest icon size* changes the game's numbered quest icons; Questie's icons have their own size settings in Questie.
 
@@ -121,3 +129,22 @@ With Questie installed, its own dungeon and raid icons are hidden while the Atla
 - **Zone levels and instances**: LibTourist-3.0 (MIT, ckknight and Arrowmaster).
 - **Boats, zeppelins, portals, world bosses**: the AzerothCore world database (transport routes, portals and their destinations, spawns), placed on the maps with the game's own WorldMapArea table. **Unexplored areas**: the game's WorldMapOverlay table. **Exact entrances** of the Hellfire, Coilfang, Tempest Keep and Auchindoun wings and a few others: the game's AreaTrigger table.
 - **Instance icons**: Blizzard Entertainment game art, from the Questie icon set. **Marker icons**: drawn for Atlas Plus.
+
+---
+
+## Screenshots
+
+<p align="center"><b>World map: zone info, map markers, no fog of war</b></p>
+<p align="center">
+<img width="760" alt="World map" src="images/screenshots/world-map.png" />
+</p>
+
+<p align="center"><b>Atlas: instance maps, bosses and their loot by difficulty</b></p>
+<p align="center">
+<img width="760" alt="Atlas: instance maps and loot" src="images/screenshots/atlas.png" />
+</p>
+
+<p align="center"><b>Settings</b></p>
+<p align="center">
+<img width="760" alt="Settings" src="images/screenshots/settings.png" />
+</p>

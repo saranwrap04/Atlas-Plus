@@ -1,4 +1,4 @@
-ATLAS PLUS for WoW 3.3.5a - version 1.10.4
+ATLAS PLUS for WoW 3.3.5a - version 1.11.1
 World map and instance maps in one window: every boss and its loot, world drops,
 world events, vendors, item search,
 map markers (dungeons, raids, world bosses, boats, zeppelins, tram, portals), no fog of war.
@@ -114,13 +114,18 @@ WORLD MAP (inside Atlas Plus)
 SETTINGS
   Settings button (or right-click the minimap button, or /ap settings). It is a window
   of its own: move it, resize it from its corner, and watch the map change as you go.
-  Window       open on the map of where you are, open by itself in instances, minimap
-               button, lock, fade while moving, opacity while moving, size, opacity.
+  Categories are in a side bar on the left; it opens on the last one you used.
+  General      open on the map of where you are, open by itself in instances, minimap
+               button, lock, fade while moving, window size, window opacity, opacity
+               while moving.
   World map    map key (M), game instance maps, no fog of war, darken unexplored areas,
-               zone panel, zone info under the cursor, coordinates, quest icon size,
-               opacity and small map size of the game's map opened on its own.
-  Map markers  each type on / off (towns included), on continent maps too, hide Questie's
-               dungeon and raid icons, only my faction's, marker size, town marker size.
+               zone panel, zone info under the cursor, coordinates, quest icon size.
+  Game map     opacity and small map size of the game's own map.
+  Map markers  each type on / off (towns included), on continent maps too, only my
+               faction's, hide Questie's dungeon and raid icons, marker size, town
+               marker size.
+  Commands and credits.
+  Sliders: drag, use the mouse wheel, or type a value in the box under them.
   Quest icon size changes the game's numbered quest icons. Questie's icons have their
   own size settings in Questie.
 

@@ -9,10 +9,11 @@
 local ADDON_NAME = ...
 AtlasPlus = AtlasPlus or {}
 local AP = AtlasPlus
-AP.VERSION = "1.10.4"
+AP.VERSION = "1.11.1"
 AP.MEDIA = "Interface\\AddOns\\" .. ADDON_NAME .. "\\"
 AP.MAPS = AP.MEDIA .. "Images\\Maps\\"
-AP.ACCENT = "|cfffc7a2b"
+AP.ACCENT = "|cffffd100"
+AP.ICON = AP.MEDIA .. "Images\\icon"
 
 local DEFAULTS = {
     autoSelect = true,      -- open on the map of the instance (or entrance) you are in

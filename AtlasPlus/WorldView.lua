@@ -92,7 +92,7 @@ function WV:Create(parent, width)
         self.contBtns[i] = b
         prev = b
     end
-    local zoneBtn = W.Button(bar, "Zone  v", 150, 20)
+    local zoneBtn = W.MenuButton(bar, "Zone", 170, 20)
     zoneBtn:SetPoint("LEFT", prev, "RIGHT", 10, 0)
     zoneBtn:SetScript("OnClick", function(b) WV:ZoneMenu(b) end)
     self.zoneBtn = zoneBtn
@@ -155,7 +155,7 @@ function WV:Create(parent, width)
     find:SetPoint("BOTTOMRIGHT", -24, 4)
     find.tip = "Find a dungeon, raid, world boss, boat, zeppelin, tram or portal and show it on the map."
     find:SetScript("OnClick", function() AP.Markers:ToggleFind() end)
-    local markers = W.Button(panel, "Markers  v", 90, 20)
+    local markers = W.MenuButton(panel, "Markers", 96, 20)
     markers:SetPoint("RIGHT", find, "LEFT", -4, 0)
     markers.tip = "Choose which markers the map shows."
     markers:SetScript("OnClick", function(b) AP.Markers:FilterMenu(b) end)
@@ -186,7 +186,7 @@ function WV:Refresh()
     if not (self.panel and self.panel:IsVisible()) then return end
     local c = GetCurrentMapContinent()
     for i, b in ipairs(self.contBtns) do b:SetSelected(i == c) end
-    self.zoneBtn:SetText((ShownZoneName() or "Zone") .. "  v")
+    self.zoneBtn:SetText(ShownZoneName() or "Zone")
     self.questsBtn:SetSelected(WorldMapQuestShowObjectives and WorldMapQuestShowObjectives:GetChecked() and true or false)
 
     -- zone block: the zone shown on the map
